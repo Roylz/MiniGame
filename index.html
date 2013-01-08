@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>A JS mini game </title>
+	<style>
+		body{font-size:12px;}
+		#fly{position:absolute;}
+		a{text-decoration:none;color:#999;}
+		.huabu,#main{width:600px;height:450px;position:relative;overflow:hidden;}
+		.b,.c{height:25px;width:25px;position:absolute;z-index:1;background:#efefef;font-size:12px;}
+		.c{background:#000;border-radius:12px;text-align:center;line-height:25px;color:#fff;}
+		.c10{background:#FDADFE}
+		.c1{background:#0569FF}
+		.c2{background:#0CCE0C}
+		.c3{background:#CE6C0A}
+		.c4{background:#FF9B05}
+		.c5{background:#CCCC66}
+		.c6{background:#CD6ACD}
+		.c7{background:#6DCECE}
+		.c8{background:#9C9C9C}
+		.c9{background:#FF6A6A}
+		#pin{z-index:3;position:absolute;width:600px;height:450px;filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity: 0.5; opacity: 0.5;background:#fff;}
+		#time,#cou,.right{position:absolute;bottom:0px;color:#999;}
+		#cou{left:100px;}
+		#menu{z-index:3;position:absolute;left:200px;top:100px;width:200px;height:300px;font-weight:bold;font-size:24px;text-align:center;}
+		#menu button{width:100px; height:50px;}
+		.right{right:0px;}
+	</style>
+</head>
+
+<body>
+	<div id="fly">
+	<div id="dou" class="huabu">
+		<div id="pin" onmousedown="event.cancelBubble=true;"></div>
+		<div id="menu"> <button onclick="start()" >'Start'</button><br><br>'How to Play: <br>Click the blank area, if up right, down or top has at least two same colors or numbers, you get points'<br> If you click a wrong area, the time will decreased 10 seconds</div>
+		<div id="main" onmousedown="MoveObject.down(this,cc)"></div>
+		
+		
+		<div id="time">'Time left: 120'</div>
+		<div id="cou">'Points:'</div>
+		
+	</div>
+	</div>
+<script>
+function $(o){
+	return document.getElementById(o);
+}
+var MoveObject={
+
+	down:function (o,fun)
+	{
+		document.onselectstart=new Function("event.returnValue=false");
+		document.body.setAttribute('style','-moz-user-select: none;');
+		//e=e?e:window.event;
+		
+		e=arguments.callee.caller.arguments[0] || window.event;
+		
+			x=e.clientX;
+			y=e.clientY;
+
+			fun([x,y]);
+			return false;
+
+	}
+
+};
+
+var o=new Array();
+var it=0;
+var fen=0;
+function ini(){
+	var _doc = (document.compatMode != "BackCompat") ? document.documentElement : document.body;
+	fly_left=_doc.scrollLeft+_doc.clientWidth/2-$('fly').offsetWidth/2;
+	$('fly').style.left=fly_left+'px';
+	for(i=0;i<15;i++){
+		for(j=0;j<12;j++){
+			tmp=document.createElement('div');
+			tmp.className="b";
+			tmp.style.left=(j*50+i%2*25)+'px';
+			tmp.style.top=i*25+'px';
+			$('main').appendChild(tmp);
+		}
+	}
+	for(i=0;i<24;i++){
+		o[i]=new Array();
+	}
+	for(i=0;i<200;i++){
+		var ji=cre();
+
+		tmp=document.createElement('div');
+		tmp.innerHTML=t;
+		tmp.id=ji[0]+'_'+ji[1];
+		tmp.className="c c"+t;
+		tmp.style.left=(x*25)+'px';
+		tmp.style.top=y*25+'px';
+		
+		$('main').appendChild(tmp);
+
+	}
+}
+function cre(){
+	x=parseInt(Math.random()*24);
+	y=parseInt(Math.random()*15);
+	t=parseInt(Math.random()*10+1);
+	if(o[x][y]>0){
+		var re=cre();
+		return re;
+	}else{
+		o[x][y]=t;
+		return [x,y];
+	}
+
+}
+function cc(p){
+	x=parseInt((p[0]-$('fly').offsetLeft)/25);
+	y=parseInt((p[1]-$('fly').offsetTop)/25);
+	if(o[x][y]>0){
+		return false;
+	}else{
+		var finded=[];
+		for(i=y;i>=0;i--){
+			if(o[x][i]>0){
+				finded.push([o[x][i],x,i]);
+				break;
+			}
+		}
+		for(i=y;i<o[x].length;i++){
+			if(o[x][i]>0){
+				finded.push([o[x][i],x,i]);
+				break;
+			}
+		}
+		for(i=x;i>=0;i--){
+			if(o[i][y]>0){
+				finded.push([o[i][y],i,y]);
+				break;
+			}
+		}
+		for(i=x;i<o.length;i++){
+			if(o[i][y]>0){
+				finded.push([o[i][y],i,y]);
+				break;
+			}
+		}
+		
+		find=0;
+		po(finded,0);
+		if(find==0){
+			it+=10;
+		}
+		fen=fen+find;
+		$('cou').innerHTML='Points:'+fen;
+
+	}
+	
+}
+
+function po(obj,n){
+	a=obj[n];
+	tag=0;
+	for(j=n+1;j<obj.length;){
+		if(obj[j][0]==a[0]){
+			o[obj[j][1]][obj[j][2]]=0;
+			parabola.p($(obj[j][1]+'_'+obj[j][2]));
+			obj.splice(j,1);
+			tag=1;
+			find++;
+		}else{
+			j++;
+		}
+	}
+	if(tag==0){
+		n++;
+	}else{
+		o[a[1]][a[2]]=0;
+		parabola.p($(a[1]+'_'+a[2]));
+		find++;
+		obj.splice(n,1);
+	}
+	if(n<obj.length-1){
+		po(obj,n);
+	}
+		
+}
+function time(){
+	it++;
+	if(it<121){
+		$('time').innerHTML='Time: '+(121-it);
+		setTimeout('time()',1000);
+	}else{
+		$('pin').style.display='block';
+		$('menu').style.display='block';
+		$('menu').innerHTML='<button onclick="start()" >Start</button><br><br><br>'+'Your points: '+fen;
+
+	}
+}
+function start(){
+	it=0;
+	fen=0;
+	$('main').innerHTML='';
+	o=new Array();
+	
+	ini();
+	$('pin').style.display='none';
+	$('menu').style.display='none';
+	
+	time();
+}
+
+
+ini();
+
+var parabola={
+	_type:[],
+	bot:0,
+	o:[],
+	ini:function(o){
+		for(i=0;i<this.o.length;i++){
+			if(this.o[i]==o){
+				return i;
+			}
+		}
+		for(i=0;i<this.o.length;i++){
+			if(this._type[i].sta==-1){
+				break;
+			}
+		}
+		
+		o.style.position='absolute';
+		this.o[i]=o;
+		this._type[i]={l:o.offsetLeft,t:o.offsetTop,s:0,nt:0,sta:1};
+		return i;
+	},
+	p:function(o){
+		this.ini(o);
+		var _doc = (document.compatMode != "BackCompat") ? document.documentElement : document.body;
+		var sctop=	document.documentElement.scrollTop||document.body.scrollTop;
+		fly_top=sctop+_doc.clientHeight
+		this.bot=fly_top-30;
+		setTimeout("parabola.dos("+i+")",20);
+	},
+	dos:function(i){
+		if(this._type[i].nt>this.bot){
+			if(this._type[i].sta==1){
+				document.body.removeChild(this.o[i]);
+				this._type.sta=-1;
+			}
+		}else{
+			this._type[i].l=this._type[i].l+3;
+			this._type[i].s++;
+			this._type[i].nt=this._type[i].t-5*this._type[i].s+0.5*1*this._type[i].s*this._type[i].s;
+			this.o[i].style.top=this._type[i].nt+'px';
+			this.o[i].style.left=this._type[i].l+'px';
+			setTimeout("parabola.dos("+i+")",20);
+		}
+	}
+};
+
+
+</script>
+
+</body>
+
+</html>
